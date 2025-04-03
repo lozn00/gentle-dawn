@@ -20,21 +20,22 @@ export default {
     }
 
     // 处理 /generate 路径，直接返回图片流
-    if (url.pathname === "/generate") {
-      const prompt = url.searchParams.get("prompt") || "cyberpunk woman, china, long hair";
-      const inputs = { prompt };
+try {
+  const response = await env.AI.run(
+    "@cf/stabilityai/stable-diffusion-xl-base-1.0",
+    inputs,
+  );
 
-      const response = await env.AI.run(
-        "@cf/stabilityai/stable-diffusion-xl-base-1.0",
-        inputs,
-      );
+  if (!response) {
+    return new Response("AI generation failed: empty response", { status: 500 });
+  }
 
-      return new Response(response, {
-        headers: {
-          "content-type": "image/png",
-        },
-      });
-    }
+  return new Response(response, {
+    headers: { "content-type": "image/png" },
+  });
+} catch (error) {
+  return new Response(`AI generation error: ${error.message}`, { status: 500 });
+}
 
     return new Response("Not Found", { status: 404 });
   },
