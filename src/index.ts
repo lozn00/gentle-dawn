@@ -1,13 +1,14 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const pathPrompt = decodeURIComponent(url.pathname.slice(1)).trim();
 
-    // 如果是根路径，返回一个 HTML 表单
+    // 如果是根路径，返回一个 HTML 表单，表单提交后使用路径方式传递参数
     if (url.pathname === "/") {
       return new Response(`
         <html>
         <body>
-          <form action="/generate" method="get" target="_blank">
+          <form action="/generate/" method="get">
             <label for="prompt">Enter your prompt:</label>
             <input type="text" id="prompt" name="prompt" required>
             <button type="submit">Generate</button>
@@ -19,9 +20,10 @@ export default {
       });
     }
 
-    // 处理 /generate 路径，直接返回图片流
-    if (url.pathname === "/generate") {
-      const prompt = url.searchParams.get("prompt") || "cyberpunk woman, china, long hair";
+    // 处理 /generate 路径，支持查询参数或路径方式传递 prompt
+    if (url.pathname.startsWith("/generate")) {
+      const queryPrompt = url.searchParams.get("prompt");
+      const prompt = queryPrompt || pathPrompt || "cyberpunk woman, china, long hair";
       const inputs = { prompt };
 
       try {
